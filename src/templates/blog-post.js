@@ -1,10 +1,18 @@
 import React from "react"
 import { Link, graphql } from "gatsby"
+import Img from 'gatsby-image'
 
+import RehypeReact from 'rehype-react'
 import Bio from "../components/bio"
 import Layout from "../components/layout"
 import SEO from "../components/seo"
 import { rhythm, scale } from "../utils/typography"
+import MailchimpForm from "../components/MailchimpForm"
+
+const renderAst = new RehypeReact({
+  createElement: React.createElement,
+  components: { 'bio': Bio /*,'Pub': Pub etc... } */ }
+}).Compiler
 
 const BlogPostTemplate = ({ data, pageContext, location }) => {
   const post = data.markdownRemark
@@ -37,12 +45,20 @@ const BlogPostTemplate = ({ data, pageContext, location }) => {
             {post.frontmatter.date}
           </p>
         </header>
-        <section dangerouslySetInnerHTML={{ __html: post.html }} />
+        <Img
+          fluid={post.frontmatter.image.childImageSharp.fluid}
+          alt={post.title}
+        />
+        {/* <section dangerouslySetInnerHTML={{ __html: post.html }} /> */}
+        <section>
+          {renderAst(post.htmlAst)}
+        </section>
         <hr
           style={{
             marginBottom: rhythm(1),
           }}
         />
+        <MailchimpForm />
         <footer>
           <Bio />
         </footer>
@@ -91,10 +107,18 @@ export const pageQuery = graphql`
       id
       excerpt(pruneLength: 160)
       html
+      htmlAst
       frontmatter {
         title
         date(formatString: "MMMM DD, YYYY")
         description
+        image {
+          childImageSharp {
+            fluid(maxWidth: 630) {
+              ...GatsbyImageSharpFluid_withWebp
+            }
+          }
+        }
       }
     }
   }
